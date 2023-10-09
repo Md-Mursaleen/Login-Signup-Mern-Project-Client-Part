@@ -1,41 +1,53 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Image, KeyboardAvoidingView, Platform, TouchableOpacity, TextInput } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as NavigationBar from "expo-navigation-bar";
 
-const LoginScreen = () => {
+const VerficationScreen = () => {
     const navigation = useNavigation();
     useEffect(() => {
         NavigationBar.setBackgroundColorAsync("#f4f4f4");
         NavigationBar.setButtonStyleAsync("dark");
     }, []);
-    const [userData, setUserData] = useState({
-        email: "",
-        password: ""
-    });
+    const route = useRoute();
+    const { userdata } = route.params;
     const [errorMessage, setErrorMessage] = useState(null);
-    const onPressLoginin = () => {
-        if (userData.email == "" || userData.password == "") {
-            setErrorMessage("All fields are required");
+    const [userCode, setUserCode] = useState("XXXX");
+    const [actualCode, setActualCode] = useState(null);
+    useEffect(() => {
+        setActualCode(userdata[0]?.verificationCode);
+    }, []);
+    const onPressVerify = () => {
+        if (userCode == "XXXX" || userCode == "") {
+            setErrorMessage("Please enter the code");
             return;
         }
-        else {
-            fetch("http://192.168.0.110:3000/signin", {
+        else if (userCode == actualCode) {
+            const userData = {
+                name: userdata[0]?.name,
+                dob: userdata[0]?.dob,
+                email: userdata[0]?.email,
+                password: userdata[0]?.password
+            }
+            fetch("http://192.168.0.110:3000/signup", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify(userData)
-            }).then((response) => response.json()).then(
-                data => {
-                    if (data.error) {
-                        setErrorMessage(data.error);
-                    }
-                    else {
-                        alert("Logged in Successfully");
-                        navigation.navigate("Home");
-                    }
-                });
+            }).then(res => res.json()).then(data => {
+                if (data.message === "User Registered Successfully") {
+                    alert(data.message);
+                    navigation.navigate("Login");
+                }
+                else {
+                    alert("Something went wrong! Try Signing Up Again");
+                }
+            });
+        }
+        else if (userCode != actualCode) {
+            setErrorMessage("Incorrect code");
+            return;
         }
     };
     return (
@@ -47,29 +59,19 @@ const LoginScreen = () => {
                 <Text style={styles.subTitleStyle}>Buying and Selling Online</Text>
             </View>
             <View style={styles.bottomContainer}>
-                <Text style={styles.loginTextStyle}>Login</Text>
-                <Text style={styles.textStyle}>Sign in to continue</Text>
+                <Text style={styles.loginTextStyle}>Verification</Text>
+                <Text style={styles.textStyle}>Verify your account</Text>
                 {errorMessage ? <Text style={styles.errorMessageTextStyle}>{errorMessage}</Text> : null}
-                <View style={styles.formItemContainer}>
-                    <Text style={styles.labelStyle}>Email</Text>
-                    <TextInput placeholder="Enter a email"
+                <View style={{ flexDirection: "column" }}>
+                    <Text style={styles.labelStyle}>Verification Code</Text>
+                    <TextInput placeholder="Enter 6 digit Verification Code"
                         placeholderTextColor="black"
                         onPressIn={() => setErrorMessage(null)}
-                        onChangeText={(value) => setUserData({ ...userData, email: value })}
+                        onChangeText={(value) => setUserCode(value)}
                         style={styles.textInputStyle} />
                 </View>
-                <View style={styles.formItemContainer}>
-                    <Text style={styles.labelStyle}>Password</Text>
-                    <TextInput placeholder="Enter a password"
-                        placeholderTextColor="black"
-                        onPressIn={() => setErrorMessage(null)}
-                        onChangeText={(value) => setUserData({ ...userData, password: value })}
-                        secureTextEntry={true}
-                        style={styles.textInputStyle} />
-                </View>
-                <Text style={styles.passwordText}>Forgot Password?</Text>
-                <TouchableOpacity style={styles.buttonContainer} onPress={() => onPressLoginin()}>
-                    <Text style={styles.buttonText}>Login In</Text>
+                <TouchableOpacity style={styles.buttonContainer} onPress={() => onPressVerify()}>
+                    <Text style={styles.buttonText}>Verify</Text>
                 </TouchableOpacity>
                 <View style={styles.accountContainer}>
                     <Text style={[styles.accountText, { color: "#a7a7a7" }]}>Don't have an account?</Text>
@@ -80,7 +82,7 @@ const LoginScreen = () => {
     );
 }
 
-export default LoginScreen;
+export default VerficationScreen;
 
 const styles = StyleSheet.create({
     container: {
@@ -97,8 +99,9 @@ const styles = StyleSheet.create({
         marginTop: 70
     },
     logoImageStyle: {
+        marginTop: 65,
         width: 260,
-        height: 260,
+        height: 270,
         alignSelf: "center",
         resizeMode: "contain"
     },
@@ -117,14 +120,14 @@ const styles = StyleSheet.create({
     },
     bottomContainer: {
         marginTop: "auto",
-        height: "55%",
+        height: "42%",
         backgroundColor: "#f4f4f4",
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30
     },
     loginTextStyle: {
         marginTop: 10,
-        fontSize: 45,
+        fontSize: 42,
         fontWeight: "600",
         color: "black",
         textAlign: "center"
@@ -145,9 +148,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
         borderRadius: 10,
     },
-    formItemContainer: {
-        flexDirection: "column"
-    },
     labelStyle: {
         marginTop: 15,
         marginLeft: 45,
@@ -166,17 +166,9 @@ const styles = StyleSheet.create({
         borderColor: "#f50057",
         borderWidth: StyleSheet.hairlineWidth
     },
-    passwordText: {
-        marginTop: 10,
-        marginLeft: "auto",
-        marginRight: 40,
-        fontSize: 15,
-        fontWeight: "600",
-        color: "#f50057"
-    },
     buttonContainer: {
         padding: 12,
-        marginTop: 20,
+        marginTop: 30,
         width: "80%",
         marginHorizontal: 10,
         backgroundColor: "#f50057",

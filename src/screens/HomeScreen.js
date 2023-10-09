@@ -1,8 +1,8 @@
 import React from "react";
-import { Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-const WelcomeScreen = () => {
+const HomeScreen = () => {
     const navigation = useNavigation();
     return (
         <View style={styles.container}>
@@ -10,24 +10,19 @@ const WelcomeScreen = () => {
             <View style={styles.subContainer}>
                 <Image source={require("../../assets/welcomelogo.png")} style={styles.logoImageStyle} />
             </View>
-            <View style={styles.bottomContainer}>
-                <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate("Login")}>
-                    <Text style={styles.buttonText}>Log In</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate("Signup")}>
-                    <Text style={styles.buttonText}>Sign Up</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.buttonText}>Login Out</Text>
+            </TouchableOpacity>
         </View>
     );
 }
 
-export default WelcomeScreen;
+export default HomeScreen;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "white"
+        backgroundColor: "#f4f4f4"
     },
     backgroundImageStyle: {
         position: "absolute",
@@ -40,25 +35,20 @@ const styles = StyleSheet.create({
         marginBottom: "auto",
     },
     logoImageStyle: {
-        marginTop: 150,
+        marginTop: 50,
         height: 300,
         width: 300,
         alignSelf: "center",
         resizeMode: "contain"
     },
-    bottomContainer: {
-        marginBottom: 150,
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "space-between"
-    },
     buttonContainer: {
-        padding: 14,
-        marginTop: 35,
-        width: "65%",
+        padding: 12,
+        marginBottom: 150,
+        width: "80%",
         marginHorizontal: 10,
         backgroundColor: "#f50057",
         alignItems: "center",
+        alignSelf: "center",
         justifyContent: "center",
         borderRadius: 5
     },
